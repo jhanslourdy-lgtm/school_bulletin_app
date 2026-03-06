@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Utilisateur | Profil Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #0f172a;
+            --darker: #020617;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--darker);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 500px; height: 500px; background: var(--info); top: -200px; left: -200px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--primary); bottom: -100px; right: -100px; animation-delay: -5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* Navbar */
+        .navbar-premium {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand-premium {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, white, var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--info);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        /* Main Content */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            padding: 40px 0;
+        }
+
+        /* Profile Card */
+        .profile-container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(99, 102, 241, 0.1));
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--info), var(--primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 3.5rem;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 50px rgba(6, 182, 212, 0.3);
+            position: relative;
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--info);
+            border-right-color: var(--primary);
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-role {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .role-admin {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .role-prof {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .role-student {
+            background: rgba(6, 182, 212, 0.2);
+            color: #67e8f9;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .profile-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+
+        .profile-body {
+            padding: 40px;
+        }
+
+        /* Form */
+        .form-premium .form-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .form-premium .form-control, .form-premium .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-premium .form-control:focus, .form-premium .form-select:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--info);
+            box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+            color: white;
+        }
+
+        .form-premium .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-premium .form-select option {
+            background: var(--dark);
+            color: white;
+        }
+
+        .input-group-premium {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-premium .form-control.with-icon {
+            padding-left: 55px;
+        }
+
+        .form-premium .form-control:focus ~ .input-icon {
+            color: var(--info);
+        }
+
+        /* Password Toggle */
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--info);
+        }
+
+        /* Password Hint */
+        .password-hint {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--info);
+            padding: 15px 20px;
+            margin-top: 10px;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .password-hint i {
+            color: var(--info);
+            font-size: 1.2rem;
+        }
+
+        /* Buttons */
+        .btn-group-premium {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-premium {
+            flex: 1;
+            padding: 16px 30px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--info), var(--primary));
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-save::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-save:hover::before {
+            left: 100%;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Alert */
+        .alert-premium {
+            border-radius: 16px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid;
+        }
+
+        .alert-danger-premium {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 40px 25px;
+            }
+            
+            .profile-body {
+                padding: 25px;
+            }
+            
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 3rem;
+            }
+            
+            .btn-group-premium {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-animation">
+        <div class="bg-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-premium">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-premium" href="#">
+                <i class="bi bi-person-gear me-2"></i>
+                Profil Utilisateur
+            </a>
+            <a th:href="@{/admin/dashboard}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                Retour au dashboard
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Alert -->
+                <div th:if="${error}" class="alert-premium alert-danger-premium">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        
+                        <span th:switch="${utilisateur.role}" class="profile-role">
+                            <span th:case="'ROLE_ADMIN'" class="role-admin">
+                                <i class="bi bi-shield-check"></i> Administrateur
+                            </span>
+                            <span th:case="'ROLE_PROFESSEUR'" class="role-prof">
+                                <i class="bi bi-person-badge"></i> Professeur
+                            </span>
+                            <span th:case="'ROLE_ETUDIANT'" class="role-student">
+                                <i class="bi bi-person"></i> Étudiant
+                            </span>
+                        </span>
+                        
+                        <h3 class="profile-name" th:text="${utilisateur.nom}">Nom</h3>
+                        <p class="profile-email" th:text="${utilisateur.email}">email@example.com</p>
+                    </div>
+                    
+                    <div class="profile-body">
+                        <form th:action="@{/admin/utilisateurs/sauvegarder}" th:object="${utilisateur}" method="post" class="form-premium">
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Nom complet</label>
+                                <div class="input-group-premium">
+                                    <i class="bi bi-person input-icon"></i>
+                                    <input type="text" th:field="*{nom}" class="form-control with-icon" placeholder="Jean Dupont" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Adresse email</label>
+                                <div class="input-group-premium">
+                                    <i class="bi bi-envelope input-icon"></i>
+                                    <input type="email" th:field="*{email}" class="form-control with-icon" placeholder="email@example.com" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Mot de passe</label>
+                                <div class="input-group-premium">
+                                    <i class="bi bi-lock input-icon"></i>
+                                    <input type="password" th:field="*{password}" class="form-control with-icon" placeholder="Laisser vide pour conserver" id="passwordInput">
+                                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                                        <i class="bi bi-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="password-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>Laissez ce champ vide pour conserver le mot de passe actuel</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Rôle</label>
+                                <div class="input-group-premium">
+                                    <i class="bi bi-shield input-icon"></i>
+                                    <select th:field="*{role}" class="form-control with-icon" style="padding-left: 55px;" required>
+                                        <option value="ROLE_ETUDIANT">Étudiant</option>
+                                        <option value="ROLE_PROFESSEUR">Professeur</option>
+                                        <option value="ROLE_ADMIN">Administrateur</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="btn-group-premium">
+                                <a th:href="@{/admin/dashboard}" class="btn-premium btn-cancel">
+                                    <i class="bi bi-x-lg"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn-premium btn-save">
+                                    <i class="bi bi-check-lg"></i>
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+</body>
+</html>

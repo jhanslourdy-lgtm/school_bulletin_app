@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin | Command Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #0f172a;
+            --darker: #020617;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--darker);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 600px; height: 600px; background: var(--primary); top: -200px; right: -200px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--secondary); bottom: -100px; left: -100px; animation-delay: -5s; }
+        .orb-3 { width: 300px; height: 300px; background: var(--accent); top: 50%; left: 30%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* Glassmorphism Navbar */
+        .navbar-premium {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand-premium {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, white, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link-premium {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 500;
+            padding: 10px 20px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link-premium:hover::before {
+            left: 100%;
+        }
+
+        .nav-link-premium:hover, .nav-link-premium.active {
+            color: white !important;
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            padding: 40px 0;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card-premium {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .stat-card-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .stat-card-premium:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-card-premium:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            filter: blur(20px);
+            opacity: 0.5;
+        }
+
+        .stat-icon-wrapper i {
+            position: relative;
+            z-index: 1;
+        }
+
+        .bg-primary-glow { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
+        .bg-success-glow { background: linear-gradient(135deg, var(--success), #059669); color: white; }
+        .bg-warning-glow { background: linear-gradient(135deg, var(--warning), #d97706); color: white; }
+        .bg-info-glow { background: linear-gradient(135deg, var(--info), #0891b2); color: white; }
+
+        .stat-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, white, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Content Cards */
+        .content-card-premium {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .content-card-premium:hover {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .card-header-premium {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card-title-premium {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title-premium i {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Form Styling */
+        .form-premium .form-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .form-premium .form-control, .form-premium .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-premium .form-control:focus, .form-premium .form-select:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 0 20px rgba(99, 102, 241, 0.2);
+            color: white;
+        }
+
+        .form-premium .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-premium .form-select option {
+            background: var(--dark);
+            color: white;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 14px;
+            padding: 14px 28px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+
+        /* Table Styling */
+        .table-premium {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .table-premium thead th {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            padding: 20px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table-premium tbody td {
+            border: none;
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            vertical-align: middle;
+        }
+
+        .table-premium tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table-premium tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .table-premium tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Role Badges */
+        .badge-role {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-admin {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-prof {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-student {
+            background: rgba(6, 182, 212, 0.2);
+            color: #67e8f9;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .btn-edit {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Alert Messages */
+        .alert-premium {
+            border: none;
+            border-radius: 16px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .alert-success-premium {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .alert-danger-premium {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header-premium {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .table-responsive {
+                border-radius: 16px;
+                border: 1px solid var(--border);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--accent));
+            border-radius: 4px;
+        }
+
+        /* Loading Animation */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 12px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-premium">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-premium" href="#">
+                <i class="bi bi-shield-check"></i>
+                Admin Center
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="background: rgba(255,255,255,0.1);">
+                <i class="bi bi-list text-white fs-4"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-premium active" th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-premium" th:href="@{/admin/matieres}">
+                            <i class="bi bi-book"></i>
+                            Matières
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-premium" th:href="@{/admin/notes}">
+                            <i class="bi bi-clipboard-data"></i>
+                            Notes
+                        </a>
+                    </li>
+                    <!-- Nouveau code avec lien GET -->
+<li class="nav-item">
+    <a th:href="@{/logout}" class="btn-logout">
+        <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+    </a>
+</li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert-premium alert-success-premium alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill fs-4"></i>
+                <div>
+                    <strong>Succès !</strong>
+                    <span th:text="${success}" class="d-block"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${error}" class="alert-premium alert-danger-premium alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                <div>
+                    <strong>Erreur !</strong>
+                    <span th:text="${error}" class="d-block"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper bg-primary-glow">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-number" th:text="${etudiantsCount != null ? etudiantsCount : 0}">0</div>
+                    <div class="stat-label">Étudiants inscrits</div>
+                </div>
+                
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper bg-success-glow">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div class="stat-number" th:text="${professeursCount != null ? professeursCount : 0}">0</div>
+                    <div class="stat-label">Professeurs actifs</div>
+                </div>
+                
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper bg-warning-glow">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="stat-number" th:text="${adminsCount != null ? adminsCount : 0}">0</div>
+                    <div class="stat-label">Administrateurs</div>
+                </div>
+                
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper bg-info-glow">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="stat-number" th:text="${utilisateurs != null ? utilisateurs.size() : 0}">0</div>
+                    <div class="stat-label">Total utilisateurs</div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Add User Form -->
+                <div class="col-lg-4">
+                    <div class="content-card-premium h-100">
+                        <div class="card-header-premium">
+                            <h5 class="card-title-premium mb-0">
+                                <i class="bi bi-person-plus"></i>
+                                Nouvel Utilisateur
+                            </h5>
+                        </div>
+                        <div class="p-4">
+                            <form th:action="@{/admin/utilisateurs/sauvegarder}" th:object="${utilisateur}" method="post" class="form-premium">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" th:field="*{nom}" class="form-control" placeholder="Jean Dupont" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" th:field="*{email}" class="form-control" placeholder="email@ecole.com" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" th:field="*{password}" class="form-control" placeholder="••••••••" required>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Rôle</label>
+                                    <select th:field="*{role}" class="form-select">
+                                        <option value="ROLE_ETUDIANT">Étudiant</option>
+                                        <option value="ROLE_PROFESSEUR">Professeur</option>
+                                        <option value="ROLE_ADMIN">Administrateur</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="submit" class="btn-premium w-100">
+                                    <i class="bi bi-save"></i>
+                                    Créer l'utilisateur
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users List -->
+                <div class="col-lg-8">
+                    <div class="content-card-premium h-100">
+                        <div class="card-header-premium">
+                            <h5 class="card-title-premium mb-0">
+                                <i class="bi bi-people"></i>
+                                Utilisateurs
+                                <span class="badge bg-primary ms-2 rounded-pill" th:text="${utilisateurs != null ? utilisateurs.size() : 0}">0</span>
+                            </h5>
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control form-control-sm" placeholder="Rechercher..." style="width: 200px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white;" id="searchUsers">
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-premium" id="usersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Email</th>
+                                        <th>Rôle</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${utilisateurs != null and not utilisateurs.isEmpty()}" th:each="u : ${utilisateurs}">
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent));">
+                                                    <i class="bi bi-person text-white"></i>
+                                                </div>
+                                                <span th:text="${u.nom}" class="fw-500"></span>
+                                            </div>
+                                        </td>
+                                        <td th:text="${u.email}"></td>
+                                        <td>
+                                            <span th:switch="${u.role}" class="badge-role">
+                                                <span th:case="'ROLE_ADMIN'" class="badge-admin">
+                                                    <i class="bi bi-shield-check"></i> Admin
+                                                </span>
+                                                <span th:case="'ROLE_PROFESSEUR'" class="badge-prof">
+                                                    <i class="bi bi-person-badge"></i> Professeur
+                                                </span>
+                                                <span th:case="'ROLE_ETUDIANT'" class="badge-student">
+                                                    <i class="bi bi-person"></i> Étudiant
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <a th:href="@{/admin/utilisateurs/modifier/{id}(id=${u.id})}" class="btn-action btn-edit" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a th:href="@{/admin/utilisateurs/supprimer/{id}(id=${u.id})}" class="btn-action btn-delete" title="Supprimer" onclick="return confirm('Supprimer cet utilisateur ?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr th:if="${utilisateurs == null or utilisateurs.isEmpty()}">
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <div class="empty-state-icon">
+                                                    <i class="bi bi-people"></i>
+                                                </div>
+                                                <h5 class="text-white mb-2">Aucun utilisateur</h5>
+                                                <p class="text-white-50 mb-0">Créez votre premier utilisateur pour commencer</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchUsers')?.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Card tilt effect
+        document.querySelectorAll('.stat-card-premium, .content-card-premium').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 30;
+                const rotateY = (centerX - x) / 30;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px) scale(1.02)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
+        });
+
+        // Animate numbers on load
+        document.querySelectorAll('.stat-number').forEach(el => {
+            const target = parseInt(el.textContent);
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(current);
+                }
+            }, 20);
+        });
+    </script>
+</body>
+</html>

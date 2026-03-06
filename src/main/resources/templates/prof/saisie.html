@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des Notes | Professeur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: linear-gradient(135deg, rgba(111, 66, 193, 0.95) 0%, rgba(86, 61, 124, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.9) 100%);
+            padding: 30px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .card-header-custom h4 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        /* Form Styling */
+        .form-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-group-text {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #e2e8f0;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            padding: 12px 16px;
+            color: #667eea;
+        }
+
+        .input-group .form-control, .input-group .form-select {
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .input-group .form-control:focus, .input-group .form-select:focus {
+            transform: none;
+        }
+
+        /* Save Button */
+        .btn-save {
+            background: var(--success-gradient);
+            border: none;
+            font-weight: 700;
+            padding: 16px 32px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-save::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(17, 153, 142, 0.5);
+        }
+
+        .btn-save:hover::before {
+            left: 100%;
+        }
+
+        .btn-save:active {
+            transform: translateY(-1px);
+        }
+
+        /* Alerts */
+        .alert-custom {
+            border-radius: 16px;
+            border: none;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.95) 0%, rgba(56, 161, 105, 0.95) 100%);
+            color: white;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(245, 101, 101, 0.95) 0%, rgba(229, 62, 62, 0.95) 100%);
+            color: white;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(246, 173, 85, 0.95) 0%, rgba(237, 137, 54, 0.95) 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Duplicate Warning Section */
+        .duplicate-warning {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 243, 205, 0.8) 100%);
+            border-left: 5px solid #f6ad55;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(246, 173, 85, 0.15);
+        }
+
+        .duplicate-warning .bg-white {
+            background: white !important;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            height: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        .info-card h6 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .info-card ul li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .info-card ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            background: rgba(72, 187, 120, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        /* Form text helper */
+        .form-text {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header-custom {
+                padding: 20px;
+            }
+            
+            .btn-save {
+                padding: 14px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/professeur/saisie}">
+                <i class="bi bi-pencil-square me-2"></i>Professeur
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a th:href="@{/professeur/liste-notes}" class="nav-link">
+                    <i class="bi bi-list-check me-1"></i>Liste des notes
+                </a>
+                <a th:href="@{/logout}" class="nav-link">
+                    <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Messages de succès -->
+        <div th:if="${success}" class="alert alert-success alert-custom alert-dismissible fade show animate-slide-in">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Succès !</h6>
+                    <span th:text="${success}"></span>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Messages d'erreur généraux (sans suggestion de modification) -->
+        <div th:if="${error != null and (suggestionModification == null or !suggestionModification)}" 
+             class="alert alert-danger alert-custom alert-dismissible fade show animate-slide-in">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Erreur !</h6>
+                    <span th:text="${error}"></span>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Carte principale -->
+        <div class="card main-card mb-4 animate-slide-in">
+            <div class="card-header-custom">
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard-plus me-2"></i>Formulaire de saisie des notes
+                </h4>
+                <p class="text-muted mb-0 mt-1">Sélectionnez un étudiant et une matière, puis saisissez la note</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <!-- Formulaire principal de saisie -->
+                <form th:action="@{/professeur/enregistrer-note}" method="post" id="mainForm">
+                    <div class="row g-4">
+                        <!-- Étudiant -->
+                        <div class="col-md-4">
+                            <label class="form-label">Étudiant</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+                                <select name="etudiant" class="form-select" required id="etudiantSelect">
+                                    <option value="" selected disabled>Choisir un étudiant</option>
+                                    <option th:each="e : ${etudiants}" 
+                                            th:value="${e.id}" 
+                                            th:text="${e.nom + ' ' + e.prenom + ' (' + e.classe + ')'}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-text" th:if="${etudiants != null}">
+                                <i class="bi bi-people me-1"></i><span th:text="${etudiants.size()}"></span> étudiant(s) disponible(s)
+                            </div>
+                        </div>
+                        
+                        <!-- Matière -->
+                        <div class="col-md-4">
+                            <label class="form-label">Matière</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <select name="matiere" class="form-select" required id="matiereSelect">
+                                    <option value="" selected disabled>Choisir une matière</option>
+                                    <option th:each="m : ${matieres}" 
+                                            th:value="${m.id}" 
+                                            th:text="${m.nom + ' (Coef: ' + m.coefficient + ')'}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-text" th:if="${matieres != null}">
+                                <i class="bi bi-collection me-1"></i><span th:text="${matieres.size()}"></span> matière(s) disponible(s)
+                            </div>
+                        </div>
+                        
+                        <!-- Note -->
+                        <div class="col-md-2">
+                            <label class="form-label">Note /20</label>
+                            <div class="input-group">
+                                <input type="number" name="valeur" class="form-control" 
+                                       step="0.25" min="0" max="20" 
+                                       placeholder="15.5" required id="noteInput">
+                                <span class="input-group-text fw-bold" style="background: #667eea; color: white; border-color: #667eea;">/20</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Semestre -->
+                        <div class="col-md-2">
+                            <label class="form-label">Semestre</label>
+                            <select name="semestre" class="form-select" required id="semestreSelect">
+                                <option value="Semestre 1" selected>Semestre 1</option>
+                                <option value="Semestre 2">Semestre 2</option>
+                                <option value="Annuel">Annuel</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Champ caché pour l'ID de la note (pour modification) -->
+                    <input type="hidden" name="noteId" id="noteIdInput">
+                    
+                    <!-- Bouton -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-save" id="submitBtn">
+                                    <i class="bi bi-save me-2"></i>Enregistrer la note
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Section pour la suggestion de modification (doublon détecté) -->
+        <div th:if="${suggestionModification}" class="alert alert-warning alert-custom mt-4 animate-slide-in">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4 mt-1"></i>
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-3">Note existante détectée</h5>
+                    
+                    <div class="duplicate-warning p-3 mb-3">
+                        <p class="mb-2">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Une note existe déjà pour cet étudiant dans cette matière et ce semestre :
+                        </p>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-3 rounded border flex-grow-1">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>Étudiant :</strong>
+                                        <span th:text="${etudiantSelectionneNom}"></span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Matière :</strong>
+                                        <span th:text="${matiereSelectionneeNom}"></span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Semestre :</strong>
+                                        <span th:text="${semestreSelectionne}"></span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <h4 class="text-primary fw-bold">
+                                        <span th:text="${noteExistante.valeur}"></span>/20
+                                        <span th:if="${noteExistante.valeur >= 16}" class="badge bg-success ms-2">Excellent</span>
+                                        <span th:if="${noteExistante.valeur >= 14 and noteExistante.valeur < 16}" class="badge bg-info ms-2">Très bien</span>
+                                        <span th:if="${noteExistante.valeur >= 10 and noteExistante.valeur < 14}" class="badge bg-warning ms-2">Satisfaisant</span>
+                                        <span th:if="${noteExistante.valeur < 10}" class="badge bg-danger ms-2">Insuffisant</span>
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="mb-3">Souhaitez-vous la modifier ?</p>
+                        
+                        <!-- Formulaire de modification -->
+                        <form th:action="@{/professeur/enregistrer-note}" method="post" class="mt-2">
+                            <input type="hidden" name="noteId" th:value="${noteExistante.id}">
+                            <input type="hidden" name="etudiant" th:value="${etudiantSelectionne}">
+                            <input type="hidden" name="matiere" th:value="${matiereSelectionnee}">
+                            <input type="hidden" name="semestre" th:value="${semestreSelectionne}">
+                            
+                            <div class="row align-items-end">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Nouvelle note</label>
+                                    <div class="input-group">
+                                        <input type="number" name="valeur" class="form-control" 
+                                               min="0" max="20" step="0.5" 
+                                               th:value="${noteExistante.valeur}" required
+                                               id="newNoteInput">
+                                        <span class="input-group-text fw-bold bg-warning text-dark">/20</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mt-md-0 mt-3">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-warning flex-grow-1 fw-bold">
+                                            <i class="bi bi-pencil me-1"></i>Modifier la note
+                                        </button>
+                                        <a th:href="@{/professeur/saisie}" class="btn btn-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>Annuler
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <p class="text-white-50 small mb-0">
+                        <i class="bi bi-lightbulb me-1"></i>
+                        Conseil : Pour éviter les doublons, vérifiez toujours si une note existe déjà avant d'en saisir une nouvelle.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations -->
+        <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+                <div class="info-card">
+                    <h6><i class="bi bi-info-circle text-primary"></i>Instructions</h6>
+                    <ul>
+                        <li>Sélectionnez un étudiant dans la liste</li>
+                        <li>Choisissez la matière concernée</li>
+                        <li>Entrez la note sur 20 (ex: 15.5)</li>
+                        <li>Sélectionnez le semestre approprié</li>
+                        <li>Le système vérifiera automatiquement les doublons</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="info-card">
+                    <h6><i class="bi bi-exclamation-triangle text-warning"></i>Notes importantes</h6>
+                    <ul>
+                        <li>Un étudiant ne peut avoir qu'une seule note par matière et par semestre</li>
+                        <li>Si une note existe déjà, vous serez invité à la modifier</li>
+                        <li>Les notes sont définitives après enregistrement</li>
+                        <li>Contactez l'admin si des données manquent</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validation de la note
+        document.querySelector('#noteInput')?.addEventListener('change', function() {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (value > 20) this.value = 20;
+            if (!isNaN(value)) {
+                this.value = Math.round(value * 4) / 4;
+            }
+        });
+        
+        // Validation de la note dans le formulaire de modification
+        document.querySelector('#newNoteInput')?.addEventListener('change', function() {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (value > 20) this.value = 20;
+            if (!isNaN(value)) {
+                this.value = Math.round(value * 4) / 4;
+            }
+        });
+        
+        // Vérifier si les données sont chargées
+        document.addEventListener('DOMContentLoaded', function() {
+            const etudiantsSelect = document.querySelector('#etudiantSelect');
+            const matieresSelect = document.querySelector('#matiereSelect');
+            
+            if (etudiantsSelect && etudiantsSelect.options.length <= 1) {
+                console.warn("Aucun étudiant chargé dans la liste");
+            }
+            
+            if (matieresSelect && matieresSelect.options.length <= 1) {
+                console.warn("Aucune matière chargée dans la liste");
+            }
+            
+            // Si on a un message de doublon, scroll vers lui
+            if (document.querySelector('.alert-warning')) {
+                document.querySelector('.alert-warning').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+        
+        // Validation avant soumission du formulaire principal
+        document.getElementById('mainForm').addEventListener('submit', function(e) {
+            const etudiant = document.getElementById('etudiantSelect').value;
+            const matiere = document.getElementById('matiereSelect').value;
+            const valeur = document.getElementById('noteInput').value;
+            const semestre = document.getElementById('semestreSelect').value;
+            
+            // Validation des champs obligatoires
+            if (!etudiant || !matiere || !valeur || !semestre) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires !');
+                return false;
+            }
+            
+            // Validation de la note
+            const noteValue = parseFloat(valeur);
+            if (isNaN(noteValue) || noteValue < 0 || noteValue > 20) {
+                e.preventDefault();
+                alert('La note doit être un nombre compris entre 0 et 20 !');
+                return false;
+            }
+            
+            // Afficher une confirmation
+            const noteId = document.getElementById('noteIdInput').value;
+            if (noteId && noteId.length > 0) {
+                if (!confirm('Êtes-vous sûr de vouloir modifier cette note ?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        // Fonction pour réinitialiser le formulaire
+        function resetForm() {
+            document.getElementById('etudiantSelect').selectedIndex = 0;
+            document.getElementById('matiereSelect').selectedIndex = 0;
+            document.getElementById('noteInput').value = '';
+            document.getElementById('semestreSelect').selectedIndex = 0;
+            document.getElementById('noteIdInput').value = '';
+            document.getElementById('submitBtn').innerHTML = 
+                '<i class="bi bi-save me-2"></i>Enregistrer la note';
+        }
+        
+        // Si l'utilisateur clique sur Annuler dans le formulaire de modification
+        // on réinitialise le formulaire principal
+        document.querySelectorAll('.btn-secondary[th\\:href="@{/professeur/saisie}"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                resetForm();
+            });
+        });
+    </script>
+</body>
+</html>

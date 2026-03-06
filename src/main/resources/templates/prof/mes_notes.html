@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Notes - Professeur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.95) 0%, rgba(13, 202, 240, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Card */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.95) 0%, rgba(13, 202, 240, 0.95) 100%);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        /* Filters */
+        .form-select, .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Table Styling */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: rgba(248, 249, 250, 0.8);
+            border-top: none;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-left-color: #667eea;
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            z-index: 10;
+            position: relative;
+        }
+
+        .table td {
+            padding: 18px 20px;
+            vertical-align: middle;
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 8px 14px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%) !important;
+            box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+            color: white !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%) !important;
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+        }
+
+        .bg-secondary {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%) !important;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .bg-info {
+            background: var(--info-gradient) !important;
+        }
+
+        .bg-success {
+            background: var(--success-gradient) !important;
+        }
+
+        .stat-card h5 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-weight: 600;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* Buttons */
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 24px;
+            border: none;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, rgba(248,249,250,0.95) 0%, rgba(233,236,239,0.95) 100%);
+            border-radius: 24px 24px 0 0;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+            padding: 25px;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 0 30px 30px;
+        }
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/professeur/saisie}">
+                <i class="bi bi-person-badge me-2"></i>Espace Professeur
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a th:href="@{/professeur/saisie}" class="nav-link">
+                    <i class="bi bi-plus-circle me-1"></i>Saisir une note
+                </a>
+                <a th:href="@{/professeur/mes-notes}" class="nav-link active">
+                    <i class="bi bi-list-check me-1"></i>Mes notes
+                </a>
+                <a th:href="@{/logout}" class="nav-link">
+                    <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card animate-slide-in">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Mes Notes</h4>
+            </div>
+            <div class="card-body">
+                <!-- Filtres -->
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold text-secondary">Matière</label>
+                        <select class="form-select" id="filterMatiere">
+                            <option value="">Toutes les matières</option>
+                            <option th:each="matiere : ${matieres}" 
+                                    th:value="${matiere.id}" 
+                                    th:text="${matiere.nom}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold text-secondary">Semestre</label>
+                        <select class="form-select" id="filterSemestre">
+                            <option value="">Tous les semestres</option>
+                            <option value="Semestre 1">Semestre 1</option>
+                            <option value="Semestre 2">Semestre 2</option>
+                            <option value="Annuel">Annuel</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold text-secondary">Recherche</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Rechercher étudiant..." 
+                                   id="searchEtudiant">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des notes -->
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Classe</th>
+                                <th>Matière</th>
+                                <th>Note</th>
+                                <th>Semestre</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="note : ${notes}">
+                                <td class="fw-semibold">
+                                    <i class="bi bi-person me-2 text-primary opacity-75"></i>
+                                    <span th:text="${note.etudiant.nomComplet}"></span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border" th:text="${note.etudiant.classe}"></span></td>
+                                <td th:text="${note.matiere.nom}"></td>
+                                <td>
+                                    <strong class="fs-5" th:text="${note.valeur}"></strong><span class="text-muted">/20</span>
+                                    <span th:if="${note.valeur >= 16}" class="badge bg-success ms-2">Excellent</span>
+                                    <span th:if="${note.valeur >= 10 and note.valeur < 16}" class="badge bg-warning ms-2">Satisfaisant</span>
+                                    <span th:if="${note.valeur < 10}" class="badge bg-danger ms-2">Insuffisant</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${note.semestre}"></span>
+                                </td>
+                                <td class="text-muted" th:text="${#dates.format(note.dateNote, 'dd/MM/yyyy')}"></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modifierNoteModal"
+                                            th:onclick="|chargerNotePourModification(
+                                                ${note.id},
+                                                ${note.etudiant.id},
+                                                ${note.matiere.id},
+                                                '${note.semestre}',
+                                                ${note.valeur}
+                                            )|">
+                                        <i class="bi bi-pencil"></i> Modifier
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Statistiques -->
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="stat-card bg-info text-center">
+                            <h5 th:text="${notes.size()}">0</h5>
+                            <p>Notes saisies</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card bg-success text-center">
+                            <h5 th:text="${matieres.size()}">0</h5>
+                            <p>Matières enseignées</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour modifier une note -->
+    <div class="modal fade" id="modifierNoteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Modifier la note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/professeur/enregistrer-note}" method="post" id="modifierNoteForm">
+                        <input type="hidden" name="noteId" id="modifierNoteId">
+                        <input type="hidden" name="etudiant" id="modifierEtudiantId">
+                        <input type="hidden" name="matiere" id="modifierMatiereId">
+                        <input type="hidden" name="semestre" id="modifierSemestre">
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Nouvelle note (sur 20)</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" name="valeur" id="modifierValeur" 
+                                       class="form-control text-center fw-bold fs-4" min="0" max="20" step="0.5" required>
+                                <span class="input-group-text bg-primary text-white fw-bold">/20</span>
+                            </div>
+                            <div class="form-text text-muted mt-2">Entre 0 et 20</div>
+                        </div>
+                        
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                            <div>
+                                Cette modification remplacera la note existante pour cet étudiant, 
+                                cette matière et ce semestre.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save me-2"></i>Enregistrer la modification
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-2"></i>Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fonction pour charger les données de la note à modifier
+        function chargerNotePourModification(noteId, etudiantId, matiereId, semestre, valeur) {
+            document.getElementById('modifierNoteId').value = noteId;
+            document.getElementById('modifierEtudiantId').value = etudiantId;
+            document.getElementById('modifierMatiereId').value = matiereId;
+            document.getElementById('modifierSemestre').value = semestre;
+            document.getElementById('modifierValeur').value = valeur;
+        }
+        
+        // Filtrage du tableau
+        document.getElementById('filterMatiere').addEventListener('change', filterTable);
+        document.getElementById('filterSemestre').addEventListener('change', filterTable);
+        document.getElementById('searchEtudiant').addEventListener('input', filterTable);
+        
+        function filterTable() {
+            const matiere = document.getElementById('filterMatiere').value;
+            const semestre = document.getElementById('filterSemestre').value;
+            const search = document.getElementById('searchEtudiant').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const rowMatiere = row.cells[2].textContent;
+                const rowSemestre = row.cells[4].querySelector('.badge').textContent;
+                const rowEtudiant = row.cells[0].textContent.toLowerCase();
+                
+                const showMatiere = !matiere || row.cells[2].innerHTML.includes(matiere);
+                const showSemestre = !semestre || rowSemestre.includes(semestre);
+                const showEtudiant = !search || rowEtudiant.includes(search);
+                
+                row.style.display = (showMatiere && showSemestre && showEtudiant) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
